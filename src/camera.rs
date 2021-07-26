@@ -19,7 +19,8 @@ pub struct Camera {
 impl Drop for Camera {
     fn drop(&mut self) {
         unsafe {
-            crate::gphoto2::gp_camera_unref(self.camera);
+            crate::gphoto2::gp_camera_exit(self.camera, self.context.context);
+            crate::gphoto2::gp_camera_free(self.camera);
             crate::gphoto2::gp_context_unref(self.context.context);
         }
     }
