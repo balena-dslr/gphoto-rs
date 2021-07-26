@@ -13,19 +13,26 @@ use crate::handle::prelude::*;
 /// A structure representing a camera connected to the system.
 pub struct Camera {
     camera: *mut crate::gphoto2::Camera,
+    context: Context,
 }
 
 impl Drop for Camera {
     fn drop(&mut self) {
         unsafe {
             crate::gphoto2::gp_camera_unref(self.camera);
+            crate::gphoto2::gp_context_unref(self.context.context);
         }
     }
 }
 
 impl Camera {
     /// Opens the first detected camera.
-    pub fn autodetect(context: &mut Context) -> crate::Result<Self> {
+    pub fn autodetect() -> crate::Result<Self> {
+        let context = match crate::Context::new() {
+            Ok(c) => c,
+            Err(err) => panic!("error creating context: {}", err),
+        };
+
         let mut ptr = MaybeUninit::uninit();
 
         let camera = unsafe {
@@ -36,18 +43,18 @@ impl Camera {
             ptr.assume_init()
         };
 
-        let camera = Camera { camera };
+        let mut camera = Camera { camera, context };
 
         try_unsafe!(crate::gphoto2::gp_camera_init(
             camera.camera,
-            context.as_mut_ptr()
+            camera.context.as_mut_ptr()
         ));
 
         Ok(camera)
     }
 
     /// Captures an image.
-    pub fn capture_image(&mut self, context: &mut Context) -> crate::Result<CameraFile> {
+    pub fn capture_image(&mut self) -> crate::Result<CameraFile> {
         let mut file_path = MaybeUninit::uninit();
 
         let file_path = unsafe {
@@ -55,7 +62,7 @@ impl Camera {
                 self.camera,
                 crate::gphoto2::GP_CAPTURE_IMAGE,
                 &mut *file_path.as_mut_ptr(),
-                context.as_mut_ptr(),
+                self.context.as_mut_ptr(),
             ) {
                 crate::gphoto2::GP_OK => (),
                 err => return Err(crate::error::from_libgphoto2(err)),
@@ -68,7 +75,6 @@ impl Camera {
     /// Downloads a file from the camera.
     pub fn download<T: Media>(
         &mut self,
-        context: &mut Context,
         source: &CameraFile,
         destination: &mut T,
     ) -> crate::Result<()> {
@@ -78,7 +84,7 @@ impl Camera {
                                           source.inner.name.as_ptr(),
                                           crate::gphoto2::GP_FILE_TYPE_NORMAL,
                                           destination.as_mut_ptr(),
-                                          context.as_mut_ptr())
+                                          self.context.as_mut_ptr())
         };
 
         Ok(())
@@ -117,7 +123,7 @@ impl Camera {
     /// Retrieves information about the camera's storage.
     ///
     /// Returns a `Vec` containing one `Storage` for each filesystem on the device.
-    pub fn storage(&mut self, context: &mut Context) -> crate::Result<Vec<Storage>> {
+    pub fn storage(&mut self) -> crate::Result<Vec<Storage>> {
         let mut ptr = MaybeUninit::uninit();
         let mut len = MaybeUninit::uninit();
 
@@ -126,7 +132,7 @@ impl Camera {
                 self.camera,
                 &mut *ptr.as_mut_ptr(),
                 &mut *len.as_mut_ptr(),
-                context.as_mut_ptr(),
+                self.context.as_mut_ptr(),
             ) {
                 crate::gphoto2::GP_OK => (),
                 err => return Err(crate::error::from_libgphoto2(err)),
@@ -150,14 +156,14 @@ impl Camera {
     ///
     /// * `NotSupported` if there is no summary available for the camera.
     /// * `CorruptedData` if the summary is invalid UTF-8.
-    pub fn summary(&mut self, context: &mut Context) -> crate::Result<String> {
+    pub fn summary(&mut self) -> crate::Result<String> {
         let mut summary = MaybeUninit::uninit();
 
         let summary = unsafe {
             match crate::gphoto2::gp_camera_get_summary(
                 self.camera,
                 &mut *summary.as_mut_ptr(),
-                context.as_mut_ptr(),
+                self.context.as_mut_ptr(),
             ) {
                 crate::gphoto2::GP_OK => (),
                 err => return Err(crate::error::from_libgphoto2(err)),
@@ -179,14 +185,14 @@ impl Camera {
     ///
     /// * `NotSupported` if there is no manual available for the camera.
     /// * `CorruptedData` if the summary is invalid UTF-8.
-    pub fn manual(&mut self, context: &mut Context) -> crate::Result<String> {
+    pub fn manual(&mut self) -> crate::Result<String> {
         let mut manual = MaybeUninit::uninit();
 
         let manual = unsafe {
             match crate::gphoto2::gp_camera_get_manual(
                 self.camera,
                 &mut *manual.as_mut_ptr(),
-                context.as_mut_ptr(),
+                self.context.as_mut_ptr(),
             ) {
                 crate::gphoto2::GP_OK => (),
                 err => return Err(crate::error::from_libgphoto2(err)),
@@ -208,14 +214,14 @@ impl Camera {
     ///
     /// * `NotSupported` if there is no about text available for the camera's driver.
     /// * `CorruptedData` if the summary is invalid UTF-8.
-    pub fn about_driver(&mut self, context: &mut Context) -> crate::Result<String> {
+    pub fn about_driver(&mut self) -> crate::Result<String> {
         let mut about = MaybeUninit::uninit();
 
         let about = unsafe {
             match crate::gphoto2::gp_camera_get_about(
                 self.camera,
                 &mut *about.as_mut_ptr(),
-                context.as_mut_ptr(),
+                self.context.as_mut_ptr(),
             ) {
                 crate::gphoto2::GP_OK => (),
                 err => return Err(crate::error::from_libgphoto2(err)),

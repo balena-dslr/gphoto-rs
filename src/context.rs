@@ -1,8 +1,8 @@
 use crate::handle::{Handle, HandleMut};
 
 /// A `libgphoto2` library context.
-pub struct Context {
-    context: *mut crate::gphoto2::GPContext,
+pub(crate) struct Context {
+    pub(crate) context: *mut crate::gphoto2::GPContext,
 }
 
 impl Context {
@@ -20,13 +20,13 @@ impl Context {
     }
 }
 
-impl Drop for Context {
+/*impl Drop for Context {
     fn drop(&mut self) {
         unsafe {
             crate::gphoto2::gp_context_unref(self.context);
         }
     }
-}
+}*/
 
 #[doc(hidden)]
 impl Handle<crate::gphoto2::GPContext> for Context {

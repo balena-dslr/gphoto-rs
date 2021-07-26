@@ -5,7 +5,7 @@ pub use crate::abilities::{
     Abilities, CameraOperation, DeviceType, DriverStatus, FileOperation, FolderOperation,
 };
 pub use crate::camera::{Camera, CameraFile};
-pub use crate::context::Context;
+pub(crate) use crate::context::Context;
 pub use crate::error::{Error, ErrorKind, Result};
 pub use crate::media::{FileMedia, Media};
 pub use crate::port::{Port, PortType};
