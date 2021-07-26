@@ -28,10 +28,7 @@ impl Drop for Camera {
 impl Camera {
     /// Opens the first detected camera.
     pub fn autodetect() -> crate::Result<Self> {
-        let context = match crate::Context::new() {
-            Ok(c) => c,
-            Err(err) => panic!("error creating context: {}", err),
-        };
+        let context = crate::Context::new()?;
 
         let mut ptr = MaybeUninit::uninit();
 
