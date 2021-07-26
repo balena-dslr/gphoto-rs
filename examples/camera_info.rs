@@ -1,12 +1,7 @@
 extern crate gphoto;
 
 fn main() {
-    let mut context = match gphoto::Context::new() {
-        Ok(c) => c,
-        Err(err) => panic!("error creating context: {}", err),
-    };
-
-    let mut camera = match gphoto::Camera::autodetect(&mut context) {
+    let mut camera = match gphoto::Camera::autodetect() {
         Ok(c) => c,
         Err(err) => panic!("error opening camera: {}", err),
     };
@@ -37,7 +32,7 @@ fn main() {
     println!("     USB subclass = {:?}", abilities.usb_subclass());
     println!("     USB protocol = {:?}", abilities.usb_protocol());
 
-    match camera.storage(&mut context) {
+    match camera.storage() {
         Ok(storage) => {
             for s in storage {
                 println!("\n[storage]");
@@ -55,15 +50,15 @@ fn main() {
         Err(err) => println!("\ncould not retrieve storage information: {}", err),
     }
 
-    if let Ok(s) = camera.summary(&mut context) {
+    if let Ok(s) = camera.summary() {
         println!("\n[summary]\n{}", s);
     }
 
-    if let Ok(s) = camera.manual(&mut context) {
+    if let Ok(s) = camera.manual() {
         println!("\n[manual]\n{}", s);
     }
 
-    if let Ok(s) = camera.about_driver(&mut context) {
+    if let Ok(s) = camera.about_driver() {
         println!("\n[driver]\n{}", s);
     }
 }

@@ -1,5 +1,3 @@
-extern crate gphoto;
-
 fn main() {
     let version = gphoto::libgphoto2_version();
     println!(

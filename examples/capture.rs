@@ -1,17 +1,10 @@
-extern crate gphoto;
-
 use std::path::Path;
 
 fn main() {
-    let mut context = match gphoto::Context::new() {
-        Ok(c) => c,
-        Err(err) => panic!("error creating context: {}", err),
-    };
-
     // open camera
 
     println!("opening camera ...");
-    let mut camera = match gphoto::Camera::autodetect(&mut context) {
+    let mut camera = match gphoto::Camera::autodetect() {
         Ok(c) => c,
         Err(err) => panic!("error opening camera: {}", err),
     };
@@ -20,7 +13,7 @@ fn main() {
     // capture image
 
     println!("capturing image ...");
-    let capture = match camera.capture_image(&mut context) {
+    let capture = match camera.capture_image() {
         Ok(c) => c,
         Err(err) => panic!("error capturing image: {}", err),
     };
@@ -34,7 +27,7 @@ fn main() {
     };
 
     println!("downloading ...");
-    if let Err(err) = camera.download(&mut context, &capture, &mut file) {
+    if let Err(err) = camera.download(&capture, &mut file, None) {
         panic!("error downloading file: {}", err);
     }
     println!(" (done)");
