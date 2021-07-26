@@ -63,7 +63,7 @@ impl FileMedia {
             }
             err => {
                 unsafe {
-                    ::libc::close(fd);
+                    libc::close(fd);
                 }
 
                 Err(crate::error::from_libgphoto2(err))
@@ -74,8 +74,8 @@ impl FileMedia {
     pub fn create_mem() -> crate::Result<Self> {
         let mut ptr = MaybeUninit::uninit();
 
-        match unsafe { gphoto2::gp_file_new(&mut *ptr.as_mut_ptr()) } {
-            gphoto2::GP_OK => {
+        match unsafe { crate::gphoto2::gp_file_new(&mut *ptr.as_mut_ptr()) } {
+            crate::gphoto2::GP_OK => {
                 let ptr = unsafe { ptr.assume_init() };
                 Ok(FileMedia { file: ptr })
             }
@@ -88,7 +88,7 @@ impl FileMedia {
         let mut len: c_ulong = 0;
 
         let ptr = unsafe {
-            gphoto2::gp_file_get_data_and_size(self.file, &mut *ptr.as_mut_ptr(), &mut len);
+            crate::gphoto2::gp_file_get_data_and_size(self.file, &mut *ptr.as_mut_ptr(), &mut len);
             ptr.assume_init()
         };
 

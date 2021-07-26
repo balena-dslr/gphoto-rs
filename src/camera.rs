@@ -77,12 +77,18 @@ impl Camera {
         &mut self,
         source: &CameraFile,
         destination: &mut T,
+        file_type: Option<crate::CameraFileType>,
     ) -> crate::Result<()> {
+        let file_type = if let Some(file_type) = file_type {
+            file_type
+        } else {
+            crate::gphoto2::GP_FILE_TYPE_NORMAL
+        };
         try_unsafe! {
             crate::gphoto2::gp_camera_file_get(self.camera,
                                           source.inner.folder.as_ptr(),
                                           source.inner.name.as_ptr(),
-                                          crate::gphoto2::GP_FILE_TYPE_NORMAL,
+                                          file_type,
                                           destination.as_mut_ptr(),
                                           self.context.as_mut_ptr())
         };
