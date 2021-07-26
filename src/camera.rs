@@ -30,8 +30,9 @@ impl Camera {
 
         try_unsafe!(crate::gphoto2::gp_camera_new(&mut *ptr.as_mut_ptr()));
 
-        let camera_ptr = unsafe { ptr.assume_init() };
-        let camera = Camera { camera: camera_ptr };
+        let camera = Camera {
+            camera: unsafe { ptr.assume_init() },
+        };
 
         try_unsafe!(crate::gphoto2::gp_camera_init(
             camera.camera,
@@ -147,9 +148,8 @@ impl Camera {
         ));
 
         if !summary.as_ptr().is_null() {
-            let summary = unsafe { summary.assume_init() };
             println!("Debug before free?");
-            util::camera_text_to_string(summary)
+            util::camera_text_to_string(unsafe { summary.assume_init() })
         } else {
             Err(crate::error::from_libgphoto2(
                 crate::gphoto2::GP_ERROR_NO_MEMORY,
@@ -177,9 +177,8 @@ impl Camera {
         ));
 
         if !manual.as_ptr().is_null() {
-            let manual = unsafe { manual.assume_init() };
             println!("Debug before free manual?");
-            util::camera_text_to_string(manual)
+            util::camera_text_to_string(unsafe { manual.assume_init() })
         } else {
             Err(crate::error::from_libgphoto2(
                 crate::gphoto2::GP_ERROR_NO_MEMORY,
@@ -207,9 +206,8 @@ impl Camera {
         ));
 
         if !about.as_ptr().is_null() {
-            let about = unsafe { about.assume_init() };
             println!("Debug before free about?");
-            util::camera_text_to_string(about)
+            util::camera_text_to_string(unsafe { about.assume_init() })
         } else {
             Err(crate::error::from_libgphoto2(
                 crate::gphoto2::GP_ERROR_NO_MEMORY,
