@@ -1,6 +1,9 @@
 use std::borrow::Cow;
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 use std::mem::MaybeUninit;
+
+use gphoto2_sys::CameraWidgetType;
+use libc::c_char;
 
 use crate::abilities::Abilities;
 use crate::context::Context;
@@ -70,6 +73,36 @@ impl Camera {
             crate::gphoto2::gp_camera_exit(self.camera, self.context.context);
         }
         Ok(CameraFile { inner: file_path })
+    }
+
+    /// Set a setting to a specific value
+    pub fn set_setting(&mut self) -> crate::Result<()> {
+        let mut widget_ptr = MaybeUninit::uninit();
+        let label = CString::new("").unwrap();
+        let label: *const c_char = label.as_ptr() as *const c_char;
+        let window = unsafe {
+            match crate::gphoto2::gp_widget_new(
+                CameraWidgetType::GP_WIDGET_WINDOW,
+                label,
+                &mut *widget_ptr.as_mut_ptr(),
+            ) {
+                crate::gphoto2::GP_OK => (),
+                err => return Err(crate::error::from_libgphoto2(err)),
+            }
+            widget_ptr.assume_init()
+        };
+        // TODO actually set values
+        // TODO wrap widget to something useful
+        unsafe {
+            match crate::gphoto2::gp_camera_set_config(
+                self.camera,
+                window,
+                self.context.as_mut_ptr(),
+            ) {
+                crate::gphoto2::GP_OK => Ok(()),
+                err => Err(crate::error::from_libgphoto2(err)),
+            }
+        }
     }
 
     /// Downloads a file from the camera.
@@ -281,20 +314,13 @@ impl CameraFile {
 mod util {
     use std::ffi::CStr;
 
-    pub fn camera_text_to_string(
-        mut camera_text: crate::gphoto2::CameraText,
-    ) -> crate::Result<String> {
-        let length = unsafe { CStr::from_ptr(camera_text.text.as_ptr()).to_bytes().len() };
+    pub fn camera_text_to_string(camera_text: crate::gphoto2::CameraText) -> crate::Result<String> {
+        let c_str = unsafe { CStr::from_ptr(camera_text.text.as_ptr()) };
 
-        let vec = unsafe {
-            Vec::<u8>::from_raw_parts(
-                camera_text.text.as_mut_ptr() as *mut u8,
-                length,
-                camera_text.text.len(),
-            )
-        };
+        let rust_str: &str = c_str
+            .to_str()
+            .map_err(|_| crate::error::Error { err: -1 })?;
 
-        String::from_utf8(vec)
-            .map_err(|_| crate::error::from_libgphoto2(crate::gphoto2::GP_ERROR_CORRUPTED_DATA))
+        Ok(rust_str.to_owned())
     }
 }

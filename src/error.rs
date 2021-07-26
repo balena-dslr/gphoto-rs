@@ -61,7 +61,7 @@ pub enum ErrorKind {
 /// An error type for working with gphoto2.
 #[derive(Debug)]
 pub struct Error {
-    err: c_int,
+    pub(crate) err: c_int,
 }
 
 impl Error {
