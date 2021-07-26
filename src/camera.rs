@@ -28,11 +28,15 @@ impl Camera {
     pub fn autodetect(context: &mut Context) -> crate::Result<Self> {
         let mut ptr = MaybeUninit::uninit();
 
-        try_unsafe!(crate::gphoto2::gp_camera_new(&mut *ptr.as_mut_ptr()));
-
-        let camera = Camera {
-            camera: unsafe { ptr.assume_init() },
+        let camera = unsafe {
+            match crate::gphoto2::gp_camera_new(&mut *ptr.as_mut_ptr()) {
+                crate::gphoto2::GP_OK => (),
+                err => return Err(crate::error::from_libgphoto2(err)),
+            }
+            ptr.assume_init()
         };
+
+        let camera = Camera { camera };
 
         try_unsafe!(crate::gphoto2::gp_camera_init(
             camera.camera,
@@ -46,14 +50,18 @@ impl Camera {
     pub fn capture_image(&mut self, context: &mut Context) -> crate::Result<CameraFile> {
         let mut file_path = MaybeUninit::uninit();
 
-        try_unsafe! {
-            crate::gphoto2::gp_camera_capture(self.camera,
-                                         crate::gphoto2::GP_CAPTURE_IMAGE,
-                                         &mut *file_path.as_mut_ptr(),
-                                         context.as_mut_ptr())
+        let file_path = unsafe {
+            match crate::gphoto2::gp_camera_capture(
+                self.camera,
+                crate::gphoto2::GP_CAPTURE_IMAGE,
+                &mut *file_path.as_mut_ptr(),
+                context.as_mut_ptr(),
+            ) {
+                crate::gphoto2::GP_OK => (),
+                err => return Err(crate::error::from_libgphoto2(err)),
+            }
+            file_path.assume_init()
         };
-
-        let file_path = unsafe { file_path.assume_init() };
         Ok(CameraFile { inner: file_path })
     }
 
@@ -80,14 +88,14 @@ impl Camera {
     pub fn port(&self) -> Port {
         let mut ptr = MaybeUninit::uninit();
 
-        unsafe {
+        let port_info = unsafe {
             assert_eq!(
                 crate::gphoto2::GP_OK,
                 crate::gphoto2::gp_camera_get_port_info(self.camera, &mut *ptr.as_mut_ptr())
             );
-        }
 
-        let port_info = unsafe { ptr.assume_init() };
+            ptr.assume_init()
+        };
         crate::port::from_libgphoto2(self, port_info)
     }
 
@@ -95,14 +103,14 @@ impl Camera {
     pub fn abilities(&self) -> Abilities {
         let mut abilities = MaybeUninit::uninit();
 
-        unsafe {
+        let abilities = unsafe {
             assert_eq!(
                 crate::gphoto2::GP_OK,
                 crate::gphoto2::gp_camera_get_abilities(self.camera, &mut *abilities.as_mut_ptr())
             );
-        }
+            abilities.assume_init()
+        };
 
-        let abilities = unsafe { abilities.assume_init() };
         crate::abilities::from_libgphoto2(abilities)
     }
 
@@ -113,15 +121,19 @@ impl Camera {
         let mut ptr = MaybeUninit::uninit();
         let mut len = MaybeUninit::uninit();
 
-        try_unsafe! {
-            crate::gphoto2::gp_camera_get_storageinfo(self.camera,
-                                                 &mut  *ptr.as_mut_ptr(),
-                                                 &mut *len.as_mut_ptr(),
-                                                 context.as_mut_ptr())
+        let (storage, len) = unsafe {
+            match crate::gphoto2::gp_camera_get_storageinfo(
+                self.camera,
+                &mut *ptr.as_mut_ptr(),
+                &mut *len.as_mut_ptr(),
+                context.as_mut_ptr(),
+            ) {
+                crate::gphoto2::GP_OK => (),
+                err => return Err(crate::error::from_libgphoto2(err)),
+            }
+            (ptr.assume_init(), len.assume_init())
         };
-
-        let storage = unsafe { *ptr.as_mut_ptr() as *mut Storage };
-        let len = unsafe { len.assume_init() };
+        let storage = storage as *mut Storage;
         let length = len as usize;
 
         Ok(unsafe { Vec::from_raw_parts(storage, length, length) })
@@ -141,20 +153,20 @@ impl Camera {
     pub fn summary(&mut self, context: &mut Context) -> crate::Result<String> {
         let mut summary = MaybeUninit::uninit();
 
-        try_unsafe!(crate::gphoto2::gp_camera_get_summary(
-            self.camera,
-            &mut *summary.as_mut_ptr(),
-            context.as_mut_ptr()
-        ));
+        let summary = unsafe {
+            match crate::gphoto2::gp_camera_get_summary(
+                self.camera,
+                &mut *summary.as_mut_ptr(),
+                context.as_mut_ptr(),
+            ) {
+                crate::gphoto2::GP_OK => (),
+                err => return Err(crate::error::from_libgphoto2(err)),
+            }
+            summary.assume_init()
+        };
 
-        if !summary.as_ptr().is_null() {
-            println!("Debug before free?");
-            util::camera_text_to_string(unsafe { summary.assume_init() })
-        } else {
-            Err(crate::error::from_libgphoto2(
-                crate::gphoto2::GP_ERROR_NO_MEMORY,
-            ))
-        }
+        println!("Debug before free?");
+        util::camera_text_to_string(summary)
     }
 
     /// Returns the camera's manual.
@@ -170,20 +182,20 @@ impl Camera {
     pub fn manual(&mut self, context: &mut Context) -> crate::Result<String> {
         let mut manual = MaybeUninit::uninit();
 
-        try_unsafe!(crate::gphoto2::gp_camera_get_manual(
-            self.camera,
-            &mut *manual.as_mut_ptr(),
-            context.as_mut_ptr()
-        ));
+        let manual = unsafe {
+            match crate::gphoto2::gp_camera_get_manual(
+                self.camera,
+                &mut *manual.as_mut_ptr(),
+                context.as_mut_ptr(),
+            ) {
+                crate::gphoto2::GP_OK => (),
+                err => return Err(crate::error::from_libgphoto2(err)),
+            }
+            manual.assume_init()
+        };
 
-        if !manual.as_ptr().is_null() {
-            println!("Debug before free manual?");
-            util::camera_text_to_string(unsafe { manual.assume_init() })
-        } else {
-            Err(crate::error::from_libgphoto2(
-                crate::gphoto2::GP_ERROR_NO_MEMORY,
-            ))
-        }
+        println!("Debug before free manual?");
+        util::camera_text_to_string(manual)
     }
 
     /// Returns information about the camera driver.
@@ -199,20 +211,20 @@ impl Camera {
     pub fn about_driver(&mut self, context: &mut Context) -> crate::Result<String> {
         let mut about = MaybeUninit::uninit();
 
-        try_unsafe!(crate::gphoto2::gp_camera_get_about(
-            self.camera,
-            &mut *about.as_mut_ptr(),
-            context.as_mut_ptr()
-        ));
+        let about = unsafe {
+            match crate::gphoto2::gp_camera_get_about(
+                self.camera,
+                &mut *about.as_mut_ptr(),
+                context.as_mut_ptr(),
+            ) {
+                crate::gphoto2::GP_OK => (),
+                err => return Err(crate::error::from_libgphoto2(err)),
+            }
+            about.assume_init()
+        };
 
-        if !about.as_ptr().is_null() {
-            println!("Debug before free about?");
-            util::camera_text_to_string(unsafe { about.assume_init() })
-        } else {
-            Err(crate::error::from_libgphoto2(
-                crate::gphoto2::GP_ERROR_NO_MEMORY,
-            ))
-        }
+        println!("Debug before free about?");
+        util::camera_text_to_string(about)
     }
 }
 

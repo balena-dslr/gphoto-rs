@@ -65,14 +65,14 @@ impl<'a> Port<'a> {
     pub fn port_type(&self) -> PortType {
         let mut port_type = MaybeUninit::uninit();
 
-        unsafe {
+        let port_type = unsafe {
             assert_eq!(
                 crate::gphoto2::GP_OK,
                 crate::gphoto2::gp_port_info_get_type(self.inner, &mut *port_type.as_mut_ptr())
             );
-        }
+            port_type.assume_init()
+        };
 
-        let port_type = unsafe { port_type.assume_init() };
         match port_type {
             crate::gphoto2::GP_PORT_SERIAL => PortType::Serial,
             crate::gphoto2::GP_PORT_USB => PortType::USB,
@@ -94,7 +94,8 @@ impl<'a> Port<'a> {
                 crate::gphoto2::GP_OK,
                 crate::gphoto2::gp_port_info_get_name(self.inner, &mut *name.as_mut_ptr())
             );
-            String::from_utf8_lossy(CStr::from_ptr(*name.as_ptr()).to_bytes())
+            let name = name.assume_init();
+            String::from_utf8_lossy(CStr::from_ptr(name).to_bytes())
         }
     }
 
@@ -107,7 +108,8 @@ impl<'a> Port<'a> {
                 crate::gphoto2::GP_OK,
                 crate::gphoto2::gp_port_info_get_path(self.inner, &mut *path.as_mut_ptr())
             );
-            String::from_utf8_lossy(CStr::from_ptr(*path.as_ptr()).to_bytes())
+            let path = path.assume_init();
+            String::from_utf8_lossy(CStr::from_ptr(path).to_bytes())
         }
     }
 }
