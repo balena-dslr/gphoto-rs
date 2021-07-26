@@ -19,8 +19,7 @@ pub struct Camera {
 impl Drop for Camera {
     fn drop(&mut self) {
         unsafe {
-            crate::gphoto2::gp_camera_exit(self.camera, self.context.context);
-            crate::gphoto2::gp_camera_free(self.camera);
+            crate::gphoto2::gp_camera_unref(self.camera);
             crate::gphoto2::gp_context_unref(self.context.context);
         }
     }
@@ -67,6 +66,9 @@ impl Camera {
             }
             file_path.assume_init()
         };
+        unsafe {
+            crate::gphoto2::gp_camera_exit(self.camera, self.context.context);
+        }
         Ok(CameraFile { inner: file_path })
     }
 
@@ -84,6 +86,9 @@ impl Camera {
                                           destination.as_mut_ptr(),
                                           self.context.as_mut_ptr())
         };
+        unsafe {
+            crate::gphoto2::gp_camera_exit(self.camera, self.context.context);
+        }
 
         Ok(())
     }
@@ -100,6 +105,9 @@ impl Camera {
 
             ptr.assume_init()
         };
+        unsafe {
+            crate::gphoto2::gp_camera_exit(self.camera, self.context.context);
+        }
         crate::port::from_libgphoto2(self, port_info)
     }
 
@@ -115,6 +123,9 @@ impl Camera {
             abilities.assume_init()
         };
 
+        unsafe {
+            crate::gphoto2::gp_camera_exit(self.camera, self.context.context);
+        }
         crate::abilities::from_libgphoto2(abilities)
     }
 
@@ -140,6 +151,9 @@ impl Camera {
         let storage = storage as *mut Storage;
         let length = len as usize;
 
+        unsafe {
+            crate::gphoto2::gp_camera_exit(self.camera, self.context.context);
+        }
         Ok(unsafe { Vec::from_raw_parts(storage, length, length) })
     }
 
@@ -169,6 +183,9 @@ impl Camera {
             summary.assume_init()
         };
 
+        unsafe {
+            crate::gphoto2::gp_camera_exit(self.camera, self.context.context);
+        }
         println!("Debug before free?");
         util::camera_text_to_string(summary)
     }
@@ -198,6 +215,9 @@ impl Camera {
             manual.assume_init()
         };
 
+        unsafe {
+            crate::gphoto2::gp_camera_exit(self.camera, self.context.context);
+        }
         println!("Debug before free manual?");
         util::camera_text_to_string(manual)
     }
@@ -227,6 +247,9 @@ impl Camera {
             about.assume_init()
         };
 
+        unsafe {
+            crate::gphoto2::gp_camera_exit(self.camera, self.context.context);
+        }
         println!("Debug before free about?");
         util::camera_text_to_string(about)
     }
