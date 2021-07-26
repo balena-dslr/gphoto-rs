@@ -2,6 +2,9 @@ use std::ffi::CString;
 use std::mem::MaybeUninit;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
+use std::slice;
+
+use libc::c_ulong;
 
 /// A trait for types that can store media.
 pub trait Media {
@@ -44,7 +47,7 @@ impl FileMedia {
             }
         };
 
-        let fd = unsafe { ::libc::open(cstr.as_ptr(), O_CREAT | O_EXCL | O_RDWR, 0o644) };
+        let fd = unsafe { libc::open(cstr.as_ptr(), O_CREAT | O_EXCL | O_RDWR, 0o644) };
         if fd < 0 {
             return Err(crate::error::from_libgphoto2(
                 crate::gphoto2::GP_ERROR_FILE_EXISTS,
@@ -66,6 +69,30 @@ impl FileMedia {
                 Err(crate::error::from_libgphoto2(err))
             }
         }
+    }
+
+    pub fn create_mem() -> crate::Result<Self> {
+        let mut ptr = MaybeUninit::uninit();
+
+        match unsafe { gphoto2::gp_file_new(&mut *ptr.as_mut_ptr()) } {
+            gphoto2::GP_OK => {
+                let ptr = unsafe { ptr.assume_init() };
+                Ok(FileMedia { file: ptr })
+            }
+            err => Err(crate::error::from_libgphoto2(err)),
+        }
+    }
+
+    pub fn get_data(&mut self) -> Vec<u8> {
+        let mut ptr = MaybeUninit::uninit();
+        let mut len: c_ulong = 0;
+
+        let ptr = unsafe {
+            gphoto2::gp_file_get_data_and_size(self.file, &mut *ptr.as_mut_ptr(), &mut len);
+            ptr.assume_init()
+        };
+
+        unsafe { slice::from_raw_parts(ptr as *const u8, len as usize).to_vec() }
     }
 }
 
