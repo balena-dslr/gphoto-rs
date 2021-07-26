@@ -1,12 +1,12 @@
 use std::borrow::Cow;
 use std::ffi::CStr;
 use std::marker::PhantomData;
-use std::mem;
+use std::mem::MaybeUninit;
 
 use ::libc::c_void;
 
 /// Types of ports.
-#[derive(Debug,PartialEq,Eq,Clone,Copy,Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum PortType {
     /// Serial port.
     Serial,
@@ -56,53 +56,64 @@ pub enum PortType {
 pub struct Port<'a> {
     // GPPortInfo is a typedef for a pointer. Lifetime is needed because it borrows data owned by
     // the Camera struct.
-    inner: ::gphoto2::GPPortInfo,
+    inner: crate::gphoto2::GPPortInfo,
     __phantom: PhantomData<&'a c_void>,
 }
 
 impl<'a> Port<'a> {
     /// Returns the type of the port.
     pub fn port_type(&self) -> PortType {
-        let mut port_type = unsafe { mem::uninitialized() };
+        let mut port_type = MaybeUninit::uninit();
 
         unsafe {
-            assert_eq!(::gphoto2::GP_OK, ::gphoto2::gp_port_info_get_type(self.inner, &mut port_type));
+            assert_eq!(
+                crate::gphoto2::GP_OK,
+                crate::gphoto2::gp_port_info_get_type(self.inner, &mut *port_type.as_mut_ptr())
+            );
         }
 
+        let port_type = unsafe { port_type.assume_init() };
         match port_type {
-            ::gphoto2::GP_PORT_SERIAL          => PortType::Serial,
-            ::gphoto2::GP_PORT_USB             => PortType::USB,
-            ::gphoto2::GP_PORT_DISK            => PortType::Disk,
-            ::gphoto2::GP_PORT_PTPIP           => PortType::PTPIP,
-            ::gphoto2::GP_PORT_USB_DISK_DIRECT => PortType::Direct,
-            ::gphoto2::GP_PORT_USB_SCSI        => PortType::SCSI,
-            ::gphoto2::GP_PORT_NONE | _        => PortType::Other,
+            crate::gphoto2::GP_PORT_SERIAL => PortType::Serial,
+            crate::gphoto2::GP_PORT_USB => PortType::USB,
+            crate::gphoto2::GP_PORT_DISK => PortType::Disk,
+            crate::gphoto2::GP_PORT_PTPIP => PortType::PTPIP,
+            crate::gphoto2::GP_PORT_USB_DISK_DIRECT => PortType::Direct,
+            crate::gphoto2::GP_PORT_USB_SCSI => PortType::SCSI,
+            crate::gphoto2::GP_PORT_NONE => PortType::Other,
+            _ => PortType::Other,
         }
     }
 
     /// Returns the name of the port.
     pub fn name(&self) -> Cow<str> {
-        let mut name = unsafe { mem::uninitialized() };
+        let mut name = MaybeUninit::uninit();
 
         unsafe {
-            assert_eq!(::gphoto2::GP_OK, ::gphoto2::gp_port_info_get_name(self.inner, &mut name));
-            String::from_utf8_lossy(CStr::from_ptr(name).to_bytes())
+            assert_eq!(
+                crate::gphoto2::GP_OK,
+                crate::gphoto2::gp_port_info_get_name(self.inner, &mut *name.as_mut_ptr())
+            );
+            String::from_utf8_lossy(CStr::from_ptr(*name.as_ptr()).to_bytes())
         }
     }
 
     /// Returns the path of the port.
     pub fn path(&self) -> Cow<str> {
-        let mut path = unsafe { mem::uninitialized() };
+        let mut path = MaybeUninit::uninit();
 
         unsafe {
-            assert_eq!(::gphoto2::GP_OK, ::gphoto2::gp_port_info_get_path(self.inner, &mut path));
-            String::from_utf8_lossy(CStr::from_ptr(path).to_bytes())
+            assert_eq!(
+                crate::gphoto2::GP_OK,
+                crate::gphoto2::gp_port_info_get_path(self.inner, &mut *path.as_mut_ptr())
+            );
+            String::from_utf8_lossy(CStr::from_ptr(*path.as_ptr()).to_bytes())
         }
     }
 }
 
 #[doc(hidden)]
-pub fn from_libgphoto2<'a>(_camera: &'a ::camera::Camera, ptr: ::gphoto2::GPPortInfo) -> Port<'a> {
+pub fn from_libgphoto2(_camera: &crate::camera::Camera, ptr: crate::gphoto2::GPPortInfo) -> Port {
     Port {
         inner: ptr,
         __phantom: PhantomData,

@@ -1,16 +1,16 @@
+use std::error::Error as StdError;
 use std::ffi::CStr;
 use std::fmt;
-use std::error::Error as StdError;
 use std::result::Result as StdResult;
 use std::str;
 
-use ::libc::{c_int};
+use ::libc::c_int;
 
 /// A specialized `Result` type for working with gphoto2.
-pub type Result<T> = StdResult<T,Error>;
+pub type Result<T> = StdResult<T, Error>;
 
 /// Types of errors reported by gphoto2.
-#[derive(Debug,PartialEq,Eq,Clone,Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ErrorKind {
     /// A parameter was incorrect.
     InvalidInput,
@@ -68,35 +68,37 @@ impl Error {
     /// Returns the kind of error.
     pub fn kind(&self) -> ErrorKind {
         match self.err {
-            ::gphoto2::GP_ERROR_BAD_PARAMETERS      => ErrorKind::InvalidInput,
-            ::gphoto2::GP_ERROR_NOT_SUPPORTED       => ErrorKind::NotSupported,
-            ::gphoto2::GP_ERROR_CORRUPTED_DATA      => ErrorKind::CorruptedData,
-            ::gphoto2::GP_ERROR_FILE_EXISTS         => ErrorKind::FileExists,
-            ::gphoto2::GP_ERROR_MODEL_NOT_FOUND     => ErrorKind::ModelNotFound,
-            ::gphoto2::GP_ERROR_DIRECTORY_NOT_FOUND => ErrorKind::DirectoryNotFound,
-            ::gphoto2::GP_ERROR_FILE_NOT_FOUND      => ErrorKind::FileNotFound,
-            ::gphoto2::GP_ERROR_DIRECTORY_EXISTS    => ErrorKind::DirectoryExists,
-            ::gphoto2::GP_ERROR_CAMERA_BUSY         => ErrorKind::CameraBusy,
-            ::gphoto2::GP_ERROR_PATH_NOT_ABSOLUTE   => ErrorKind::PathNotAbsolute,
-            ::gphoto2::GP_ERROR_CANCEL              => ErrorKind::Cancel,
-            ::gphoto2::GP_ERROR_CAMERA_ERROR        => ErrorKind::CameraError,
-            ::gphoto2::GP_ERROR_OS_FAILURE          => ErrorKind::OSFailure,
-            ::gphoto2::GP_ERROR_NO_SPACE            => ErrorKind::NoSpace,
-
-            ::gphoto2::GP_ERROR | _ => ErrorKind::Other
+            crate::gphoto2::GP_ERROR_BAD_PARAMETERS => ErrorKind::InvalidInput,
+            crate::gphoto2::GP_ERROR_NOT_SUPPORTED => ErrorKind::NotSupported,
+            crate::gphoto2::GP_ERROR_CORRUPTED_DATA => ErrorKind::CorruptedData,
+            crate::gphoto2::GP_ERROR_FILE_EXISTS => ErrorKind::FileExists,
+            crate::gphoto2::GP_ERROR_MODEL_NOT_FOUND => ErrorKind::ModelNotFound,
+            crate::gphoto2::GP_ERROR_DIRECTORY_NOT_FOUND => ErrorKind::DirectoryNotFound,
+            crate::gphoto2::GP_ERROR_FILE_NOT_FOUND => ErrorKind::FileNotFound,
+            crate::gphoto2::GP_ERROR_DIRECTORY_EXISTS => ErrorKind::DirectoryExists,
+            crate::gphoto2::GP_ERROR_CAMERA_BUSY => ErrorKind::CameraBusy,
+            crate::gphoto2::GP_ERROR_PATH_NOT_ABSOLUTE => ErrorKind::PathNotAbsolute,
+            crate::gphoto2::GP_ERROR_CANCEL => ErrorKind::Cancel,
+            crate::gphoto2::GP_ERROR_CAMERA_ERROR => ErrorKind::CameraError,
+            crate::gphoto2::GP_ERROR_OS_FAILURE => ErrorKind::OSFailure,
+            crate::gphoto2::GP_ERROR_NO_SPACE => ErrorKind::NoSpace,
+            crate::gphoto2::GP_ERROR => ErrorKind::Other,
+            _ => ErrorKind::Other,
         }
     }
 
     /// Returns an error message.
     pub fn message(&self) -> &'static str {
         unsafe {
-            str::from_utf8_unchecked(CStr::from_ptr(::gphoto2::gp_result_as_string(self.err)).to_bytes())
+            str::from_utf8_unchecked(
+                CStr::from_ptr(crate::gphoto2::gp_result_as_string(self.err)).to_bytes(),
+            )
         }
     }
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> StdResult<(),fmt::Error> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> StdResult<(), fmt::Error> {
         fmt.write_str(self.message())
     }
 }
@@ -107,18 +109,17 @@ impl StdError for Error {
     }
 }
 
-
 #[doc(hidden)]
 pub fn from_libgphoto2(err: c_int) -> Error {
-    Error { err: err }
+    Error { err }
 }
 
 #[doc(hidden)]
 macro_rules! try_unsafe {
     ($x:expr) => {
         match unsafe { $x } {
-            ::gphoto2::GP_OK => (),
-            err => return Err(::error::from_libgphoto2(err))
+            crate::gphoto2::GP_OK => (),
+            err => return Err(crate::error::from_libgphoto2(err)),
         }
-    }
+    };
 }

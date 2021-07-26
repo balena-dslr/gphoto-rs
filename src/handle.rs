@@ -1,5 +1,5 @@
 pub mod prelude {
-    pub use super::{Handle,HandleMut};
+    pub use super::{Handle, HandleMut};
 }
 
 /// Types that manages access to a resource.

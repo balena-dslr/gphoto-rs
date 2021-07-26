@@ -39,107 +39,101 @@ use std::ffi::CStr;
 /// ```
 #[repr(C)]
 pub struct Storage {
-    inner: ::gphoto2::CameraStorageInformation,
+    inner: crate::gphoto2::CameraStorageInformation,
 }
 
 impl Storage {
     /// Base directory of the storage.
     pub fn base_dir(&self) -> Option<Cow<str>> {
-        if self.inner.fields & ::gphoto2::GP_STORAGEINFO_BASE != 0 {
+        if self.inner.fields & crate::gphoto2::GP_STORAGEINFO_BASE != 0 {
             Some(unsafe {
                 String::from_utf8_lossy(CStr::from_ptr(self.inner.basedir.as_ptr()).to_bytes())
             })
-        }
-        else {
+        } else {
             None
         }
     }
 
     /// The storage's label.
     pub fn label(&self) -> Option<Cow<str>> {
-        if self.inner.fields & ::gphoto2::GP_STORAGEINFO_LABEL != 0 {
+        if self.inner.fields & crate::gphoto2::GP_STORAGEINFO_LABEL != 0 {
             Some(unsafe {
                 String::from_utf8_lossy(CStr::from_ptr(self.inner.label.as_ptr()).to_bytes())
             })
-        }
-        else {
+        } else {
             None
         }
     }
 
     /// A description of the storage.
     pub fn description(&self) -> Option<Cow<str>> {
-        if self.inner.fields & ::gphoto2::GP_STORAGEINFO_DESCRIPTION != 0 {
+        if self.inner.fields & crate::gphoto2::GP_STORAGEINFO_DESCRIPTION != 0 {
             Some(unsafe {
                 String::from_utf8_lossy(CStr::from_ptr(self.inner.description.as_ptr()).to_bytes())
             })
-        }
-        else {
+        } else {
             None
         }
     }
 
     /// The storage's hardware type.
     pub fn storage_type(&self) -> Option<StorageType> {
-        if self.inner.fields & ::gphoto2::GP_STORAGEINFO_STORAGETYPE != 0 {
+        if self.inner.fields & crate::gphoto2::GP_STORAGEINFO_STORAGETYPE != 0 {
             Some(match self.inner.storage_type {
-                ::gphoto2::GP_STORAGEINFO_ST_FIXED_ROM     => StorageType::FixedRom,
-                ::gphoto2::GP_STORAGEINFO_ST_REMOVABLE_ROM => StorageType::RemovableRom,
-                ::gphoto2::GP_STORAGEINFO_ST_FIXED_RAM     => StorageType::FixedRam,
-                ::gphoto2::GP_STORAGEINFO_ST_REMOVABLE_RAM => StorageType::RemoveableRam,
-                ::gphoto2::GP_STORAGEINFO_ST_UNKNOWN       => StorageType::Unknown,
+                crate::gphoto2::GP_STORAGEINFO_ST_FIXED_ROM => StorageType::FixedRom,
+                crate::gphoto2::GP_STORAGEINFO_ST_REMOVABLE_ROM => StorageType::RemovableRom,
+                crate::gphoto2::GP_STORAGEINFO_ST_FIXED_RAM => StorageType::FixedRam,
+                crate::gphoto2::GP_STORAGEINFO_ST_REMOVABLE_RAM => StorageType::RemoveableRam,
+                crate::gphoto2::GP_STORAGEINFO_ST_UNKNOWN => StorageType::Unknown,
             })
-        }
-        else {
+        } else {
             None
         }
     }
 
     /// The hiearchy type of the storage's filesystem.
     pub fn filesystem_type(&self) -> Option<FilesystemType> {
-        if self.inner.fields & ::gphoto2::GP_STORAGEINFO_FILESYSTEMTYPE != 0 {
+        if self.inner.fields & crate::gphoto2::GP_STORAGEINFO_FILESYSTEMTYPE != 0 {
             Some(match self.inner.fstype {
-                ::gphoto2::GP_STORAGEINFO_FST_GENERICFLAT         => FilesystemType::Flat,
-                ::gphoto2::GP_STORAGEINFO_FST_GENERICHIERARCHICAL => FilesystemType::Hierarchical,
-                ::gphoto2::GP_STORAGEINFO_FST_DCF                 => FilesystemType::DCF,
-                ::gphoto2::GP_STORAGEINFO_FST_UNDEFINED           => FilesystemType::Unknown,
+                crate::gphoto2::GP_STORAGEINFO_FST_GENERICFLAT => FilesystemType::Flat,
+                crate::gphoto2::GP_STORAGEINFO_FST_GENERICHIERARCHICAL => {
+                    FilesystemType::Hierarchical
+                }
+                crate::gphoto2::GP_STORAGEINFO_FST_DCF => FilesystemType::DCF,
+                crate::gphoto2::GP_STORAGEINFO_FST_UNDEFINED => FilesystemType::Unknown,
             })
-        }
-        else {
+        } else {
             None
         }
     }
 
     /// The storage's access permissions.
     pub fn access_type(&self) -> Option<AccessType> {
-        if self.inner.fields & ::gphoto2::GP_STORAGEINFO_ACCESS != 0 {
+        if self.inner.fields & crate::gphoto2::GP_STORAGEINFO_ACCESS != 0 {
             Some(match self.inner.access {
-                ::gphoto2::GP_STORAGEINFO_AC_READWRITE            => AccessType::ReadWrite,
-                ::gphoto2::GP_STORAGEINFO_AC_READONLY             => AccessType::ReadOnly,
-                ::gphoto2::GP_STORAGEINFO_AC_READONLY_WITH_DELETE => AccessType::ReadDelete,
+                crate::gphoto2::GP_STORAGEINFO_AC_READWRITE => AccessType::ReadWrite,
+                crate::gphoto2::GP_STORAGEINFO_AC_READONLY => AccessType::ReadOnly,
+                crate::gphoto2::GP_STORAGEINFO_AC_READONLY_WITH_DELETE => AccessType::ReadDelete,
             })
-        }
-        else {
+        } else {
             None
         }
     }
 
     /// The storage's total capacity in kilobytes.
     pub fn capacity_kbytes(&self) -> Option<u64> {
-        if self.inner.fields & ::gphoto2::GP_STORAGEINFO_MAXCAPACITY != 0 {
+        if self.inner.fields & crate::gphoto2::GP_STORAGEINFO_MAXCAPACITY != 0 {
             Some(self.inner.capacitykbytes)
-        }
-        else {
+        } else {
             None
         }
     }
 
     /// The storage's free space in kilobytes.
     pub fn free_kbytes(&self) -> Option<u64> {
-        if self.inner.fields & ::gphoto2::GP_STORAGEINFO_FREESPACEKBYTES != 0 {
+        if self.inner.fields & crate::gphoto2::GP_STORAGEINFO_FREESPACEKBYTES != 0 {
             Some(self.inner.freekbytes)
-        }
-        else {
+        } else {
             None
         }
     }
@@ -148,10 +142,9 @@ impl Storage {
     ///
     /// This value is estimated by the camera.
     pub fn free_images(&self) -> Option<u64> {
-        if self.inner.fields & ::gphoto2::GP_STORAGEINFO_FREESPACEIMAGES != 0 {
+        if self.inner.fields & crate::gphoto2::GP_STORAGEINFO_FREESPACEIMAGES != 0 {
             Some(self.inner.freeimages)
-        }
-        else {
+        } else {
             None
         }
     }

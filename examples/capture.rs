@@ -5,7 +5,7 @@ use std::path::Path;
 fn main() {
     let mut context = match gphoto::Context::new() {
         Ok(c) => c,
-        Err(err) => panic!("error creating context: {}", err)
+        Err(err) => panic!("error creating context: {}", err),
     };
 
     // open camera
@@ -13,7 +13,7 @@ fn main() {
     println!("opening camera ...");
     let mut camera = match gphoto::Camera::autodetect(&mut context) {
         Ok(c) => c,
-        Err(err) => panic!("error opening camera: {}", err)
+        Err(err) => panic!("error opening camera: {}", err),
     };
     println!(" (done)");
 
@@ -22,7 +22,7 @@ fn main() {
     println!("capturing image ...");
     let capture = match camera.capture_image(&mut context) {
         Ok(c) => c,
-        Err(err) => panic!("error capturing image: {}", err)
+        Err(err) => panic!("error capturing image: {}", err),
     };
     println!(" (done) {:?}", capture.basename());
 
@@ -30,7 +30,7 @@ fn main() {
 
     let mut file = match gphoto::FileMedia::create(Path::new(capture.basename().as_ref())) {
         Ok(f) => f,
-        Err(err) => panic!("error saving file: {}", err)
+        Err(err) => panic!("error saving file: {}", err),
     };
 
     println!("downloading ...");

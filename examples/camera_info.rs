@@ -3,12 +3,12 @@ extern crate gphoto;
 fn main() {
     let mut context = match gphoto::Context::new() {
         Ok(c) => c,
-        Err(err) => panic!("error creating context: {}", err)
+        Err(err) => panic!("error creating context: {}", err),
     };
 
     let mut camera = match gphoto::Camera::autodetect(&mut context) {
         Ok(c) => c,
-        Err(err) => panic!("error opening camera: {}", err)
+        Err(err) => panic!("error opening camera: {}", err),
     };
 
     {
@@ -51,8 +51,8 @@ fn main() {
                 println!("        free kb = {:?}", s.free_kbytes());
                 println!("    free images = {:?}", s.free_images());
             }
-        },
-        Err(err) => println!("\ncould not retrieve storage information: {}", err)
+        }
+        Err(err) => println!("\ncould not retrieve storage information: {}", err),
     }
 
     if let Ok(s) = camera.summary(&mut context) {

@@ -36,27 +36,25 @@ pub struct LibraryVersion {
 impl LibraryVersion {
     fn new() -> LibraryVersion {
         let ptr = unsafe {
-            ::gphoto2::gp_library_version(::gphoto2::GPVersionVerbosity::GP_VERSION_SHORT)
+            crate::gphoto2::gp_library_version(crate::gphoto2::GPVersionVerbosity::GP_VERSION_SHORT)
         };
 
         let mut len: usize = 0;
 
-        while !unsafe { *ptr.offset(len as isize) }.is_null() {
+        while !unsafe { *ptr.add(len) }.is_null() {
             len += 1;
         }
 
         assert!(len >= 5);
 
-        let table = unsafe {
-            slice::from_raw_parts(ptr, len)
-        };
+        let table = unsafe { slice::from_raw_parts(ptr, len) };
 
         LibraryVersion {
-            version:  unsafe { str::from_utf8_unchecked(CStr::from_ptr(table[0]).to_bytes()) },
-            camlibs:  unsafe { str::from_utf8_unchecked(CStr::from_ptr(table[1]).to_bytes()) },
+            version: unsafe { str::from_utf8_unchecked(CStr::from_ptr(table[0]).to_bytes()) },
+            camlibs: unsafe { str::from_utf8_unchecked(CStr::from_ptr(table[1]).to_bytes()) },
             compiler: unsafe { str::from_utf8_unchecked(CStr::from_ptr(table[2]).to_bytes()) },
-            ltdl:     unsafe { str::from_utf8_unchecked(CStr::from_ptr(table[3]).to_bytes()) },
-            exif:     unsafe { str::from_utf8_unchecked(CStr::from_ptr(table[4]).to_bytes()) },
+            ltdl: unsafe { str::from_utf8_unchecked(CStr::from_ptr(table[3]).to_bytes()) },
+            exif: unsafe { str::from_utf8_unchecked(CStr::from_ptr(table[4]).to_bytes()) },
         }
     }
 

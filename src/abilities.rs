@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::collections::HashSet;
 use std::ffi::CStr;
 
-use ::port::{PortType};
+use crate::port::PortType;
 
 /// Describes the abilities of a device.
 ///
@@ -48,32 +48,30 @@ use ::port::{PortType};
 ///      USB protocol = 0
 /// ```
 pub struct Abilities {
-    inner: ::gphoto2::CameraAbilities
+    inner: crate::gphoto2::CameraAbilities,
 }
 
 impl Abilities {
     /// Returns the type of the device.
     pub fn device_type(&self) -> DeviceType {
         match self.inner.device_type {
-            ::gphoto2::GP_DEVICE_STILL_CAMERA => DeviceType::Camera,
-            ::gphoto2::GP_DEVICE_AUDIO_PLAYER => DeviceType::Audio,
+            crate::gphoto2::GP_DEVICE_STILL_CAMERA => DeviceType::Camera,
+            crate::gphoto2::GP_DEVICE_AUDIO_PLAYER => DeviceType::Audio,
         }
     }
 
     /// Returns the name of the camera's model.
     pub fn model(&self) -> Cow<str> {
-        unsafe {
-            String::from_utf8_lossy(CStr::from_ptr(self.inner.model.as_ptr()).to_bytes())
-        }
+        unsafe { String::from_utf8_lossy(CStr::from_ptr(self.inner.model.as_ptr()).to_bytes()) }
     }
 
     /// Returns the driver's stability status.
     pub fn driver_status(&self) -> DriverStatus {
         match self.inner.status {
-            ::gphoto2::GP_DRIVER_STATUS_PRODUCTION   => DriverStatus::Production,
-            ::gphoto2::GP_DRIVER_STATUS_TESTING      => DriverStatus::Testing,
-            ::gphoto2::GP_DRIVER_STATUS_EXPERIMENTAL => DriverStatus::Experimental,
-            ::gphoto2::GP_DRIVER_STATUS_DEPRECATED   => DriverStatus::Deprecated,
+            crate::gphoto2::GP_DRIVER_STATUS_PRODUCTION => DriverStatus::Production,
+            crate::gphoto2::GP_DRIVER_STATUS_TESTING => DriverStatus::Testing,
+            crate::gphoto2::GP_DRIVER_STATUS_EXPERIMENTAL => DriverStatus::Experimental,
+            crate::gphoto2::GP_DRIVER_STATUS_DEPRECATED => DriverStatus::Deprecated,
         }
     }
 
@@ -81,27 +79,27 @@ impl Abilities {
     pub fn port_types(&self) -> HashSet<PortType> {
         let mut port_types = HashSet::<PortType>::new();
 
-        if self.inner.port & ::gphoto2::GP_PORT_SERIAL != 0 {
+        if self.inner.port & crate::gphoto2::GP_PORT_SERIAL != 0 {
             port_types.insert(PortType::Serial);
         }
 
-        if self.inner.port & ::gphoto2::GP_PORT_USB != 0 {
+        if self.inner.port & crate::gphoto2::GP_PORT_USB != 0 {
             port_types.insert(PortType::USB);
         }
 
-        if self.inner.port & ::gphoto2::GP_PORT_DISK != 0 {
+        if self.inner.port & crate::gphoto2::GP_PORT_DISK != 0 {
             port_types.insert(PortType::Disk);
         }
 
-        if self.inner.port & ::gphoto2::GP_PORT_PTPIP != 0 {
+        if self.inner.port & crate::gphoto2::GP_PORT_PTPIP != 0 {
             port_types.insert(PortType::PTPIP);
         }
 
-        if self.inner.port & ::gphoto2::GP_PORT_USB_DISK_DIRECT != 0 {
+        if self.inner.port & crate::gphoto2::GP_PORT_USB_DISK_DIRECT != 0 {
             port_types.insert(PortType::Direct);
         }
 
-        if self.inner.port & ::gphoto2::GP_PORT_USB_SCSI != 0 {
+        if self.inner.port & crate::gphoto2::GP_PORT_USB_SCSI != 0 {
             port_types.insert(PortType::SCSI);
         }
 
@@ -110,34 +108,39 @@ impl Abilities {
 
     /// Returns the supported serial port speeds.
     pub fn speeds(&self) -> Vec<usize> {
-        self.inner.speed.iter().take_while(|&n| *n != 0).map(|&n| n as usize).collect()
+        self.inner
+            .speed
+            .iter()
+            .take_while(|&n| *n != 0)
+            .map(|&n| n as usize)
+            .collect()
     }
 
     /// Returns the camera operations supported by the device.
     pub fn camera_operations(&self) -> HashSet<CameraOperation> {
         let mut operations = HashSet::<CameraOperation>::new();
 
-        if self.inner.operations & ::gphoto2::GP_OPERATION_CONFIG != 0 {
+        if self.inner.operations & crate::gphoto2::GP_OPERATION_CONFIG != 0 {
             operations.insert(CameraOperation::Config);
         }
 
-        if self.inner.operations & ::gphoto2::GP_OPERATION_CAPTURE_IMAGE != 0 {
+        if self.inner.operations & crate::gphoto2::GP_OPERATION_CAPTURE_IMAGE != 0 {
             operations.insert(CameraOperation::CaptureImage);
         }
 
-        if self.inner.operations & ::gphoto2::GP_OPERATION_CAPTURE_VIDEO != 0 {
+        if self.inner.operations & crate::gphoto2::GP_OPERATION_CAPTURE_VIDEO != 0 {
             operations.insert(CameraOperation::CaptureVideo);
         }
 
-        if self.inner.operations & ::gphoto2::GP_OPERATION_CAPTURE_AUDIO != 0 {
+        if self.inner.operations & crate::gphoto2::GP_OPERATION_CAPTURE_AUDIO != 0 {
             operations.insert(CameraOperation::CaptureAudio);
         }
 
-        if self.inner.operations & ::gphoto2::GP_OPERATION_CAPTURE_PREVIEW != 0 {
+        if self.inner.operations & crate::gphoto2::GP_OPERATION_CAPTURE_PREVIEW != 0 {
             operations.insert(CameraOperation::CapturePreview);
         }
 
-        if self.inner.operations & ::gphoto2::GP_OPERATION_TRIGGER_CAPTURE != 0 {
+        if self.inner.operations & crate::gphoto2::GP_OPERATION_TRIGGER_CAPTURE != 0 {
             operations.insert(CameraOperation::TriggerCapture);
         }
 
@@ -148,23 +151,23 @@ impl Abilities {
     pub fn file_operations(&self) -> HashSet<FileOperation> {
         let mut operations = HashSet::<FileOperation>::new();
 
-        if self.inner.file_operations & ::gphoto2::GP_FILE_OPERATION_DELETE != 0 {
+        if self.inner.file_operations & crate::gphoto2::GP_FILE_OPERATION_DELETE != 0 {
             operations.insert(FileOperation::Delete);
         }
 
-        if self.inner.file_operations & ::gphoto2::GP_FILE_OPERATION_PREVIEW != 0 {
+        if self.inner.file_operations & crate::gphoto2::GP_FILE_OPERATION_PREVIEW != 0 {
             operations.insert(FileOperation::Preview);
         }
 
-        if self.inner.file_operations & ::gphoto2::GP_FILE_OPERATION_RAW != 0 {
+        if self.inner.file_operations & crate::gphoto2::GP_FILE_OPERATION_RAW != 0 {
             operations.insert(FileOperation::Raw);
         }
 
-        if self.inner.file_operations & ::gphoto2::GP_FILE_OPERATION_AUDIO != 0 {
+        if self.inner.file_operations & crate::gphoto2::GP_FILE_OPERATION_AUDIO != 0 {
             operations.insert(FileOperation::Audio);
         }
 
-        if self.inner.file_operations & ::gphoto2::GP_FILE_OPERATION_EXIF != 0 {
+        if self.inner.file_operations & crate::gphoto2::GP_FILE_OPERATION_EXIF != 0 {
             operations.insert(FileOperation::EXIF);
         }
 
@@ -175,19 +178,19 @@ impl Abilities {
     pub fn folder_operations(&self) -> HashSet<FolderOperation> {
         let mut operations = HashSet::<FolderOperation>::new();
 
-        if self.inner.folder_operations & ::gphoto2::GP_FOLDER_OPERATION_DELETE_ALL != 0 {
+        if self.inner.folder_operations & crate::gphoto2::GP_FOLDER_OPERATION_DELETE_ALL != 0 {
             operations.insert(FolderOperation::DeleteAll);
         }
 
-        if self.inner.folder_operations & ::gphoto2::GP_FOLDER_OPERATION_PUT_FILE != 0 {
+        if self.inner.folder_operations & crate::gphoto2::GP_FOLDER_OPERATION_PUT_FILE != 0 {
             operations.insert(FolderOperation::PutFile);
         }
 
-        if self.inner.folder_operations & ::gphoto2::GP_FOLDER_OPERATION_MAKE_DIR != 0 {
+        if self.inner.folder_operations & crate::gphoto2::GP_FOLDER_OPERATION_MAKE_DIR != 0 {
             operations.insert(FolderOperation::MakeDirectory);
         }
 
-        if self.inner.folder_operations & ::gphoto2::GP_FOLDER_OPERATION_REMOVE_DIR != 0 {
+        if self.inner.folder_operations & crate::gphoto2::GP_FOLDER_OPERATION_REMOVE_DIR != 0 {
             operations.insert(FolderOperation::RemoveDirectory);
         }
 
@@ -221,7 +224,7 @@ impl Abilities {
 }
 
 /// Types of devices.
-#[derive(Debug,PartialEq,Eq,Clone,Copy,Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum DeviceType {
     /// Still camera.
     Camera,
@@ -231,7 +234,7 @@ pub enum DeviceType {
 }
 
 /// Stability of camera driver.
-#[derive(Debug,PartialEq,Eq,Clone,Copy,Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum DriverStatus {
     /// Driver is production ready.
     Production,
@@ -247,7 +250,7 @@ pub enum DriverStatus {
 }
 
 /// Operations that can be performed on a device.
-#[derive(Debug,PartialEq,Eq,Clone,Copy,Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum CameraOperation {
     /// Camera can be configured.
     Config,
@@ -268,9 +271,8 @@ pub enum CameraOperation {
     TriggerCapture,
 }
 
-
 /// Operations that can be performed on files on a device's storage.
-#[derive(Debug,PartialEq,Eq,Clone,Copy,Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum FileOperation {
     /// Files can be deleted.
     Delete,
@@ -289,7 +291,7 @@ pub enum FileOperation {
 }
 
 /// Operations that can be performed on folders on a device's storage.
-#[derive(Debug,PartialEq,Eq,Clone,Copy,Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum FolderOperation {
     /// Deleting all files on the device is supported.
     DeleteAll,
@@ -304,8 +306,7 @@ pub enum FolderOperation {
     RemoveDirectory,
 }
 
-
 #[doc(hidden)]
-pub fn from_libgphoto2(abilities: ::gphoto2::CameraAbilities) -> Abilities {
+pub fn from_libgphoto2(abilities: crate::gphoto2::CameraAbilities) -> Abilities {
     Abilities { inner: abilities }
 }
