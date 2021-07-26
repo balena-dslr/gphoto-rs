@@ -147,6 +147,7 @@ impl Camera {
         ));
 
         let summary = unsafe { summary.assume_init() };
+        println!("Debug before free?");
         util::camera_text_to_string(summary)
     }
 
