@@ -146,9 +146,15 @@ impl Camera {
             context.as_mut_ptr()
         ));
 
-        let summary = unsafe { summary.assume_init() };
-        println!("Debug before free?");
-        util::camera_text_to_string(summary)
+        if !summary.as_ptr().is_null() {
+            let summary = unsafe { summary.assume_init() };
+            println!("Debug before free?");
+            util::camera_text_to_string(summary)
+        } else {
+            Err(crate::error::from_libgphoto2(
+                crate::gphoto2::GP_ERROR_NO_MEMORY,
+            ))
+        }
     }
 
     /// Returns the camera's manual.
@@ -170,8 +176,15 @@ impl Camera {
             context.as_mut_ptr()
         ));
 
-        let manual = unsafe { manual.assume_init() };
-        util::camera_text_to_string(manual)
+        if !manual.as_ptr().is_null() {
+            let manual = unsafe { manual.assume_init() };
+            println!("Debug before free manual?");
+            util::camera_text_to_string(manual)
+        } else {
+            Err(crate::error::from_libgphoto2(
+                crate::gphoto2::GP_ERROR_NO_MEMORY,
+            ))
+        }
     }
 
     /// Returns information about the camera driver.
@@ -193,8 +206,15 @@ impl Camera {
             context.as_mut_ptr()
         ));
 
-        let about = unsafe { about.assume_init() };
-        util::camera_text_to_string(about)
+        if !about.as_ptr().is_null() {
+            let about = unsafe { about.assume_init() };
+            println!("Debug before free about?");
+            util::camera_text_to_string(about)
+        } else {
+            Err(crate::error::from_libgphoto2(
+                crate::gphoto2::GP_ERROR_NO_MEMORY,
+            ))
+        }
     }
 }
 
