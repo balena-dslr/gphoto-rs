@@ -225,7 +225,6 @@ impl Camera {
         unsafe {
             crate::gphoto2::gp_camera_exit(self.camera, self.context.context);
         }
-        println!("Debug before free?");
         util::camera_text_to_string(summary)
     }
 
@@ -257,7 +256,6 @@ impl Camera {
         unsafe {
             crate::gphoto2::gp_camera_exit(self.camera, self.context.context);
         }
-        println!("Debug before free manual?");
         util::camera_text_to_string(manual)
     }
 
@@ -289,7 +287,6 @@ impl Camera {
         unsafe {
             crate::gphoto2::gp_camera_exit(self.camera, self.context.context);
         }
-        println!("Debug before free about?");
         util::camera_text_to_string(about)
     }
 }
