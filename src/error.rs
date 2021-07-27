@@ -4,6 +4,7 @@ use core::result::Result as StdResult;
 use core::str;
 use cstr_core::CStr;
 // TODO this is not no_std compatible
+#[cfg(feature = "std")]
 use std::error::Error as StdError;
 #[cfg(feature = "std")]
 use std::fmt;
@@ -107,6 +108,7 @@ impl fmt::Display for Error {
     }
 }
 
+#[cfg(feature = "std")]
 impl StdError for Error {
     fn description(&self) -> &str {
         self.message()
