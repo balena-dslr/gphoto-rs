@@ -1,6 +1,7 @@
-use std::ffi::CStr;
-use std::slice;
-use std::str;
+use core::slice;
+use core::str;
+
+use cstr_core::CStr;
 
 /// A structure that describes the version of the `libgphoto2` library.
 ///

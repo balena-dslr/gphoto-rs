@@ -1,7 +1,9 @@
-use std::ffi::CString;
-use std::mem::MaybeUninit;
-use std::os::unix::ffi::OsStrExt;
+#[cfg(not(feature = "std"))]
+use alloc::slice;
+use core::mem::MaybeUninit;
+use cstr_core::CString;
 use std::path::Path;
+#[cfg(feature = "std")]
 use std::slice;
 
 use libc::c_ulong;
@@ -35,10 +37,30 @@ impl FileMedia {
     /// This function returns an error if the file can not be created:
     ///
     /// * `FileExists` if the file already exists.
+    #[cfg(feature = "std")]
     pub fn create(path: &Path) -> crate::Result<Self> {
-        use ::libc::{O_CREAT, O_EXCL, O_RDWR};
+        let path_str = path.to_str().unwrap();
+        FileMedia::create_internal(path_str)
+    }
 
-        let cstr = match CString::new(path.as_os_str().as_bytes()) {
+    /// Creates a new file that stores media.
+    ///
+    /// This function creates a new file on disk. The file will start out empty.
+    ///
+    /// ## Errors
+    ///
+    /// This function returns an error if the file can not be created:
+    ///
+    /// * `FileExists` if the file already exists.
+    #[cfg(not(feature = "std"))]
+    fn create(path_str: &str) -> crate::Result<Self> {
+        FileMedia::create_internal(path_str)
+    }
+
+    fn create_internal(path: &str) -> crate::Result<Self> {
+        use libc::{O_CREAT, O_EXCL, O_RDWR};
+
+        let cstr = match CString::new(path) {
             Ok(s) => s,
             Err(_) => {
                 return Err(crate::error::from_libgphoto2(

@@ -1,6 +1,10 @@
+#[cfg(not(feature = "std"))]
+use alloc::borrow::Cow;
+#[cfg(feature = "std")]
 use std::borrow::Cow;
-use std::ffi::{CStr, CString};
-use std::mem::MaybeUninit;
+
+use core::mem::MaybeUninit;
+use cstr_core::{CStr, CString};
 
 use gphoto2_sys::CameraWidgetType;
 use libc::c_char;
@@ -309,7 +313,7 @@ impl CameraFile {
 }
 
 mod util {
-    use std::ffi::CStr;
+    use cstr_core::CStr;
 
     pub fn camera_text_to_string(camera_text: crate::gphoto2::CameraText) -> crate::Result<String> {
         let c_str = unsafe { CStr::from_ptr(camera_text.text.as_ptr()) };

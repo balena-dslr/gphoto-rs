@@ -1,10 +1,14 @@
+#[cfg(not(feature = "std"))]
+use alloc::fmt;
+use core::result::Result as StdResult;
+use core::str;
+use cstr_core::CStr;
+// TODO this is not no_std compatible
 use std::error::Error as StdError;
-use std::ffi::CStr;
+#[cfg(feature = "std")]
 use std::fmt;
-use std::result::Result as StdResult;
-use std::str;
 
-use ::libc::c_int;
+use libc::c_int;
 
 /// A specialized `Result` type for working with gphoto2.
 pub type Result<T> = StdResult<T, Error>;

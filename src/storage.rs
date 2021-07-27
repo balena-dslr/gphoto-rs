@@ -1,5 +1,8 @@
+#[cfg(not(feature = "std"))]
+use alloc::borrow::Cow;
+use cstr_core::CStr;
+#[cfg(feature = "std")]
 use std::borrow::Cow;
-use std::ffi::CStr;
 
 /// Structure containing information about a camera's storage.
 ///

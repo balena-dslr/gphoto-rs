@@ -1,8 +1,10 @@
-use std::borrow::Cow;
-use std::collections::HashSet;
-use std::ffi::CStr;
+#[cfg(not(feature = "std"))]
+use alloc::{borrow::Cow, collections::BTreeSet};
+#[cfg(feature = "std")]
+use std::{borrow::Cow, collections::BTreeSet};
 
 use crate::port::PortType;
+use cstr_core::CStr;
 
 /// Describes the abilities of a device.
 ///
@@ -76,8 +78,8 @@ impl Abilities {
     }
 
     /// Returns the supported port types.
-    pub fn port_types(&self) -> HashSet<PortType> {
-        let mut port_types = HashSet::<PortType>::new();
+    pub fn port_types(&self) -> BTreeSet<PortType> {
+        let mut port_types = BTreeSet::<PortType>::new();
 
         if self.inner.port & crate::gphoto2::GP_PORT_SERIAL != 0 {
             port_types.insert(PortType::Serial);
@@ -117,8 +119,8 @@ impl Abilities {
     }
 
     /// Returns the camera operations supported by the device.
-    pub fn camera_operations(&self) -> HashSet<CameraOperation> {
-        let mut operations = HashSet::<CameraOperation>::new();
+    pub fn camera_operations(&self) -> BTreeSet<CameraOperation> {
+        let mut operations = BTreeSet::<CameraOperation>::new();
 
         if self.inner.operations & crate::gphoto2::GP_OPERATION_CONFIG != 0 {
             operations.insert(CameraOperation::Config);
@@ -148,8 +150,8 @@ impl Abilities {
     }
 
     /// Returns the file operations supported by the device.
-    pub fn file_operations(&self) -> HashSet<FileOperation> {
-        let mut operations = HashSet::<FileOperation>::new();
+    pub fn file_operations(&self) -> BTreeSet<FileOperation> {
+        let mut operations = BTreeSet::<FileOperation>::new();
 
         if self.inner.file_operations & crate::gphoto2::GP_FILE_OPERATION_DELETE != 0 {
             operations.insert(FileOperation::Delete);
@@ -175,8 +177,8 @@ impl Abilities {
     }
 
     /// Returns the folder operations supported by the device.
-    pub fn folder_operations(&self) -> HashSet<FolderOperation> {
-        let mut operations = HashSet::<FolderOperation>::new();
+    pub fn folder_operations(&self) -> BTreeSet<FolderOperation> {
+        let mut operations = BTreeSet::<FolderOperation>::new();
 
         if self.inner.folder_operations & crate::gphoto2::GP_FOLDER_OPERATION_DELETE_ALL != 0 {
             operations.insert(FolderOperation::DeleteAll);
@@ -224,7 +226,7 @@ impl Abilities {
 }
 
 /// Types of devices.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord)]
 pub enum DeviceType {
     /// Still camera.
     Camera,
@@ -234,7 +236,7 @@ pub enum DeviceType {
 }
 
 /// Stability of camera driver.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord)]
 pub enum DriverStatus {
     /// Driver is production ready.
     Production,
@@ -250,7 +252,7 @@ pub enum DriverStatus {
 }
 
 /// Operations that can be performed on a device.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord)]
 pub enum CameraOperation {
     /// Camera can be configured.
     Config,
@@ -272,7 +274,7 @@ pub enum CameraOperation {
 }
 
 /// Operations that can be performed on files on a device's storage.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord)]
 pub enum FileOperation {
     /// Files can be deleted.
     Delete,
@@ -291,7 +293,7 @@ pub enum FileOperation {
 }
 
 /// Operations that can be performed on folders on a device's storage.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord)]
 pub enum FolderOperation {
     /// Deleting all files on the device is supported.
     DeleteAll,

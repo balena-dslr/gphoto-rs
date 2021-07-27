@@ -1,12 +1,14 @@
+#[cfg(not(feature = "std"))]
+use allow::borrow::Cow;
+use core::marker::PhantomData;
+use core::mem::MaybeUninit;
+use cstr_core::CStr;
+use libc::c_void;
+#[cfg(feature = "std")]
 use std::borrow::Cow;
-use std::ffi::CStr;
-use std::marker::PhantomData;
-use std::mem::MaybeUninit;
-
-use ::libc::c_void;
 
 /// Types of ports.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, PartialOrd, Ord)]
 pub enum PortType {
     /// Serial port.
     Serial,

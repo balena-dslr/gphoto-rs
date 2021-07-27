@@ -11,9 +11,15 @@ readme = "README.md"
 keywords = ["gphoto2", "camera", "hardware"]
 edition = "2018"
 
+[features]
+std = ["libc/std", "gphoto2-sys/std","cstr_core/arc", "cstr_core/alloc"]
+default = ["std"]
+
 [dependencies]
-libc = "0.2"
+libc = {version = "0.2", default-features=false}
+cstr_core = {version = "0.2.4", default-features=false}
 
 [dependencies.gphoto2-sys]
 version = "0.1.2"
+default-features = false
 git = "https://github.com/balena-dslr/gphoto2-sys.git"
